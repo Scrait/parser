@@ -4,6 +4,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.interactions.Actions;
 import org.springframework.stereotype.Service;
 import ru.scrait.parser.models.Item;
@@ -28,20 +29,13 @@ public class ParseService {
         initDriver();
         driver.get(QUERY + id + ".html");
 
-        if (true) {
-            while (true) {
-
-            }
-
-        }
-
         if (driver.getTitle().equals("Captcha Interception")) {
             try {
-                Thread.sleep(20000);
+                Thread.sleep(15000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            holdAndMove(driver.findElement(By.className("btn_slide")));
+            //holdAndMove(driver.findElement(By.className("btn_slide")));
         }
 
 
@@ -50,7 +44,7 @@ public class ParseService {
 
         final List<String> images = new ArrayList<>();
         final List<WebElement> imagesWE = driver.findElements(By.className("detail-gallery-turn-wrapper"));
-        imagesWE.forEach(el -> images.add(el.getText()));
+        imagesWE.forEach(el -> images.add(el.findElement(By.tagName("img")).getAttribute("src")));
         item.setImages(images);
 
         //TODO:check later
@@ -61,7 +55,8 @@ public class ParseService {
                 .getText()
         );
 
-        final String imgSrc = imagesWE.get(0).getAttribute("src");
+        System.out.println(imagesWE);
+        final String imgSrc = imagesWE.get(0).findElement(By.tagName("img")).getAttribute("src");
         item.setSeller_user_id(imgSrc.substring(
                 imgSrc.indexOf("!!") + 2, imgSrc.indexOf("-0-cib.jpg"))
         );
@@ -83,15 +78,25 @@ public class ParseService {
                 .forEach(el -> descImages.add(el.getText()));
         item.setDesc_img(descImages);
 
+
+        /**
+         * Нажимаем на кнопку для расширения вариантов для того чтобы показались все данные
+         */
+        click(driver.findElement(By.className("sku-wrapper-expend-button")));
+
         final List<WebElement> props = driver.findElements(By.className("sku-item-wrapper"));
 
         final Map<String, String> propsImages = new HashMap<>();
         props.forEach(webElement -> propsImages.put("0:" + props.indexOf(webElement),
-                webElement.findElement(By.className("sku-item-image")).getCssValue("url")));
+                webElement.findElement(By.className("sku-item-image")).getCssValue("background").
+                        substring(
+                                webElement.findElement(By.className("sku-item-image")).getCssValue("background").indexOf("https://"),
+                                webElement.findElement(By.className("sku-item-image")).getCssValue("background").indexOf(") no-repeat")
+                        )));
         item.setProps_img(propsImages);
 
         final Map<String, String> propsSkuList = new HashMap<>();
-        props.forEach(webElement -> propsImages.put("0:" + props.indexOf(webElement),
+        props.forEach(webElement -> propsSkuList.put("0:" + props.indexOf(webElement),
                 "Color: " + webElement.findElement(By.className("sku-item-name")).getText()));
         item.setSku_props_list(propsSkuList);
 
@@ -103,25 +108,29 @@ public class ParseService {
     }
 
     private void initDriver() {
-        System.setProperty("webdriver.chrome.driver", "/Users/scrait/Downloads/chromedriver-mac-arm64/chromedriver");
-        driver = new ChromeDriver();
+        //System.setProperty("webdriver.chrome.driver", "/Users/scrait/Downloads/chromedriver-mac-arm64/chromedriver");
+        System.setProperty("webdriver.chrome.driver", "C:/Users/scrai/Documents/chromedriver.exe");
+        final ChromeOptions chromeOptions = new ChromeOptions();
+        chromeOptions.addArguments("--disable-blink-features=AutomationControlled");
+        //chromeOptions.setExperimentalOption("excludeSwitches", "enable-automation");
+        //chromeOptions.setExperimentalOption("useAutomationExtension", false);
+
+        driver = new ChromeDriver(chromeOptions);
         driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
     }
 
     private void holdAndMove(WebElement element) {
         Actions action = new Actions(driver);
         action.clickAndHold(element).build().perform();
-        for (int i = 0; i < 75; i++) {
-            action.moveToLocation(element.getLocation().x + i, element.getLocation().y);
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        action.moveToLocation(element.getLocation().x + 100, element.getLocation().y);
         action.release();
         //you need to release the control from the test
         //actions.MoveToElement(element).Release();
+    }
+
+    private void click(WebElement element) {
+        Actions action = new Actions(driver);
+        action.click(element).build().perform();
     }
 
 
