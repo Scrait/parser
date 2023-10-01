@@ -1,9 +1,7 @@
 package ru.scrait.parser.models;
 
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
@@ -28,6 +26,5 @@ public class Item {
     private Map<String, String> props;
     private Map<String, String> sku_props_list;
     private List<Map<String, String>> skus;
-
 
 }
