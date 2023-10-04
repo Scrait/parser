@@ -25,6 +25,6 @@ public class Item {
     private Map<String, String> props_img;
     private Map<String, String> props;
     private Map<String, String> sku_props_list;
-    private List<Map<String, String>> skus;
+    private List<Skus> skus;
 
 }

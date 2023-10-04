@@ -1,14 +1,13 @@
 package ru.scrait.parser.services;
 
 import lombok.RequiredArgsConstructor;
-import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.interactions.Actions;
 import org.springframework.stereotype.Service;
-import ru.scrait.parser.interfaces.IInitService;
+import ru.scrait.parser.interfaces.IInitDriverService;
 
 /**
  * Здесь описываются все действия с элементами сайта
@@ -18,20 +17,20 @@ import ru.scrait.parser.interfaces.IInitService;
  */
 @Service
 @RequiredArgsConstructor
-public class ActionsService implements IInitService {
+public class ActionsService implements IInitDriverService {
 
-    private final DriverService driverService;
     private WebDriver driver;
 
     @Override
-    public void initDriver() {
-        driver = driverService.getDriver();
+    public void initDriver(WebDriver driver) {
+        this.driver = driver;
     }
 
     protected void holdAndMove(WebElement element) {
         final Action action = new Actions(driver)
                 .clickAndHold(element)
-                .moveByOffset(1, 0)
+                .moveByOffset(1, -2)
+                .moveByOffset(-2, 1)
                 .moveByOffset(300, 0)
                 .build();
         action.perform();
