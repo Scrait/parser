@@ -6,8 +6,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.interactions.Actions;
-import org.springframework.stereotype.Service;
 import ru.scrait.parser.interfaces.IInitDriverService;
+import ru.scrait.parser.utils.FindUtils;
 
 /**
  * Здесь описываются все действия с элементами сайта
@@ -15,7 +15,6 @@ import ru.scrait.parser.interfaces.IInitDriverService;
  * @author Scrait
  * @since 01/10/2023
  */
-@Service
 @RequiredArgsConstructor
 public class ActionsService implements IInitDriverService {
 
@@ -29,9 +28,9 @@ public class ActionsService implements IInitDriverService {
     protected void holdAndMove(WebElement element) {
         final Action action = new Actions(driver)
                 .clickAndHold(element)
-                .moveByOffset(1, -2)
-                .moveByOffset(-2, 1)
-                .moveByOffset(300, 0)
+                .moveByOffset(FindUtils.randomNumber(-5, 6) + 1, FindUtils.randomNumber(-4, 2) + 1)
+                .moveByOffset(FindUtils.randomNumber(297, 392), FindUtils.randomNumber(-2, 7) + 1)
+                .release()
                 .build();
         action.perform();
     }
@@ -48,10 +47,15 @@ public class ActionsService implements IInitDriverService {
         jse.executeScript("window.scrollBy(0," + offset + ")");
     }
 
-    protected void scrollToElement(WebElement element) {
-        final Action action = new Actions(driver)
-                .scrollToElement(element)
-                .build();
-        action.perform();
+    protected void scrollToScrollHeight() {
+        final JavascriptExecutor jse = (JavascriptExecutor)driver;
+        jse.executeScript("var el = document.getElementsByClassName('infinite-scroller')[0]; el.scroll(0, el.scrollHeight)");
     }
+
+//    protected void scrollToElement(WebElement element) {
+//        final Action action = new Actions(driver)
+//                .scrollToElement(element)
+//                .build();
+//        action.perform();
+//    }
 }

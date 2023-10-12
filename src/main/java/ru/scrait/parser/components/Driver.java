@@ -1,36 +1,39 @@
 package ru.scrait.parser.components;
 
+import org.springframework.stereotype.Component;
+import ru.scrait.parser.interfaces.IInitService;
+import ru.scrait.parser.models.Item;
 import ru.scrait.parser.services.ActionsService;
 import ru.scrait.parser.services.DriverService;
 import ru.scrait.parser.services.ParseService;
 
-import java.util.ArrayList;
-import java.util.List;
+@Component
+public class Driver implements IInitService {
 
-public class DriverThread extends Thread {
-
-    public final List<Long> tasks = new ArrayList<>();
-    private final ParseService parseService;
+    public final ParseService parseService;
     private final DriverService driverService;
     private final ActionsService actionsService;
+    public int tasks = 0;
 
-    public DriverThread() {
+    public Driver() {
         driverService = new DriverService();
         actionsService = new ActionsService();
         parseService = new ParseService(actionsService);
     }
 
     @Override
-    public void run() {
+    public void init() {
         driverService.init();
         parseService.initDriver(driverService.getDriver());
         actionsService.initDriver(driverService.getDriver());
-        while (true) {
-            final List<Long> tasks = this.tasks;
-            if (!tasks.isEmpty()) {
-                parseService.parse(tasks.get(0));
-            }
-        }
+    }
+
+
+    public Item submit(long id) {
+        tasks++;
+        final Item item = parseService.getAndParse(id);
+        tasks--;
+        return item;
     }
 
 }

@@ -7,10 +7,10 @@ import lombok.Data;
 @AllArgsConstructor
 public class Skus {
 
-    private final String sold;
+    private final int sold;
     private final String price;
-    private final String sku_id;
-    private final String in_stock;
+    private final long sku_id;
+    private final int in_stock;
     private final String sku_props_list_ids;
 
 }
