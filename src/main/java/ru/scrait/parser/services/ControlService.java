@@ -13,10 +13,14 @@ public class ControlService {
     private final List<Driver> drivers = new ArrayList<>();
     @Value("${driver.count}")
     private int count;
+    @Value("${driver.ip}")
+    private String ip;
+    @Value("${driver.port}")
+    private int port;
 
     public void init() {
         for (int i = 0; i < count; i++) {
-            drivers.add(new Driver());
+            drivers.add(new Driver(ip, port));
         }
         drivers.forEach(Driver::init);
     }

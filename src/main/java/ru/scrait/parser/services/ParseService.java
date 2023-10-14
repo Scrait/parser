@@ -150,11 +150,11 @@ public class ParseService implements IInitDriverService {
         //driver.findElement(By.xpath("/html/body/script[7]")).getAttribute("innerHTML")
         //try {
         final String scriptStr = driver.findElement(By.xpath("/html/body/script[7]")).getAttribute("innerHTML");
-        try {
-            Files.writeString(new File("dfdsf").toPath(), scriptStr);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            Files.writeString(new File("dfdsf").toPath(), scriptStr);
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
         script = new JSONObject(scriptStr.substring(scriptStr.indexOf("INIT_DATA=") + 10));
         globalData = script.getJSONObject("globalData");
 

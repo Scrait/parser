@@ -1,13 +1,11 @@
 package ru.scrait.parser.components;
 
-import org.springframework.stereotype.Component;
 import ru.scrait.parser.interfaces.IInitService;
 import ru.scrait.parser.models.Item;
 import ru.scrait.parser.services.ActionsService;
 import ru.scrait.parser.services.DriverService;
 import ru.scrait.parser.services.ParseService;
 
-@Component
 public class Driver implements IInitService {
 
     public final ParseService parseService;
@@ -15,8 +13,8 @@ public class Driver implements IInitService {
     private final ActionsService actionsService;
     public int tasks = 0;
 
-    public Driver() {
-        driverService = new DriverService();
+    public Driver(String ip, int port) {
+        driverService = new DriverService(ip, port);
         actionsService = new ActionsService();
         parseService = new ParseService(actionsService);
     }

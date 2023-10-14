@@ -28,9 +28,17 @@ public class ActionsService implements IInitDriverService {
     protected void holdAndMove(WebElement element) {
         final Action action = new Actions(driver)
                 .clickAndHold(element)
-                .moveByOffset(FindUtils.randomNumber(-5, 6) + 1, FindUtils.randomNumber(-4, 2) + 1)
-                .moveByOffset(FindUtils.randomNumber(297, 392), FindUtils.randomNumber(-2, 7) + 1)
+
+                .moveByOffset(FindUtils.randomNumber(3, 6), FindUtils.randomNumber(1, 3))
+                .moveByOffset(FindUtils.randomNumber(-3, -1), FindUtils.randomNumber(1, 3))
+
+                .moveByOffset(FindUtils.randomNumber(40, 80), FindUtils.randomNumber(-20, 20))
+                .moveByOffset(FindUtils.randomNumber(-4, -2), FindUtils.randomNumber(-20, 20))
+
+                .moveByOffset(FindUtils.randomNumber(297, 392), FindUtils.randomNumber(4, 7))
                 .release()
+
+                .moveByOffset(FindUtils.randomNumber(-5, 4), FindUtils.randomNumber(-7, 3))
                 .build();
         action.perform();
     }
