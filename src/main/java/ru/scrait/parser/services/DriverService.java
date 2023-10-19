@@ -33,19 +33,22 @@ public class DriverService implements IInitService {
 
         final ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.addArguments("--disable-blink-features=AutomationControlled");
-        chromeOptions.addArguments("user-agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36\"");
+            //chromeOptions.addArguments("user-agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36\"");
         chromeOptions.addArguments("--ignore-ssl-errors=yes");
         chromeOptions.addArguments("--ignore-certificate-errors");
-        //chromeOptions.addArguments("--headless=new");
+        //chromeOptions.addArguments("--headless");
 
         try {
             driver = new RemoteWebDriver(new URL("http://" + ip + ":" + port + "/wd/hub"), chromeOptions);
-            //driver = new ChromeDriver(chromeOptions);
+           // driver = new ChromeDriver(chromeOptions);
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
         //driver.manage().timeouts().implicitlyWait(Duration.ofMillis(100));
         driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(60));
+        driver.manage().window().maximize();
+        driver.get("https://www.google.com/");
+        //driver.manage().window().fullscreen();
 
 //        JavascriptExecutor jse = (JavascriptExecutor)driver;
 //        jse.executeScript("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})");

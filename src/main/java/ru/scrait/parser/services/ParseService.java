@@ -2,9 +2,11 @@ package ru.scrait.parser.services;
 
 import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.openqa.selenium.*;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import ru.scrait.parser.interfaces.IInitDriverService;
 import ru.scrait.parser.models.Item;
@@ -12,9 +14,6 @@ import ru.scrait.parser.models.Prop;
 import ru.scrait.parser.models.Skus;
 import ru.scrait.parser.utils.FindUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.time.Duration;
 import java.util.*;
 
@@ -45,25 +44,12 @@ public class ParseService implements IInitDriverService {
 
     public Item parse(long id) {
         try {
-//            actionsService.scrollToOffset(-10000);
-//            actionsService.scrollToOffset(5000);
-//            actionsService.scrollToOffset(-10000);
             final Item item = new Item();
             item.setProduct_id(id);
 
-            //driver.get(QUERY + id + ".html");
-
             bypassCaptcha();
 
-            //bypassCaptcha();
-
-
-
-
-            //actionsService.scrollToOffset(-10000);
-
             setScript();
-            //final List<WebElement> imagesWE = driver.findElements(By.className("detail-gallery-turn-wrapper"));
 
             item.setImages(getImages());
 
@@ -79,26 +65,7 @@ public class ParseService implements IInitDriverService {
 
             item.setPrice(getPrice());
 
-            //item.setIn_stock();
-
             item.setMin_amount(getMin_amount());
-
-            /**
-             * Получаем вид до скролла
-             */
-
-
-            /**
-             * Нажимаем на кнопку для расширения вариантов
-             * для того, чтобы показались все данные
-             */
-//            try {
-//                //actionsService.scrollToOffset(250);
-//                actionsService.click(driver.findElement(By.className("sku-wrapper-expend-button")));
-//            } catch (Exception ignored) {}
-//
-//            final List<WebElement> props = driver.findElements(By.className("sku-item-wrapper"));
-            //actionsService.scrollToOffset(-10000);
 
             item.setProps_img(getProps_img());
 
@@ -108,9 +75,7 @@ public class ParseService implements IInitDriverService {
 
             item.setSku_props_list(getSku_props_list());
 
-            //item.setSku_props_list(getSku_props_list(props, type));
-
-            item.setSkus(getSkus(item.getSku_props_list()));
+            item.setSkus(getSkus(item.getSku_props_list(), item.getPrice_range()));
 
             item.setIn_stock(getSkusInStock());
 
@@ -130,37 +95,31 @@ public class ParseService implements IInitDriverService {
 
 
     private void bypassCaptcha() {
-        try {
-            if (driver.getTitle().equals("Captcha Interception")) {
-                actionsService.holdAndMove(driver.findElement(By.id("nc_1_n1z")));
-            }
-        } catch (NoSuchElementException ignored) {
+        if (driver.getTitle().equals("Captcha Interception")) {
+            driver.manage().window().fullscreen();
+            actionsService.holdAndMove(wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nc_1_n1z"))));
             driver.navigate().refresh();
         }
-
-
-//        if (isElementExists(By.className("baxia-dialog-close"))) {
-//            try {
-//                actionsService.click(wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("baxia-dialog-close"))));
-//            } catch (Exception ignored) {}
-//        }
+        driver.manage().window().fullscreen();
+        driver.manage().window().maximize();
     }
 
     private void setScript() {
-        //driver.findElement(By.xpath("/html/body/script[7]")).getAttribute("innerHTML")
-        //try {
-        final String scriptStr = driver.findElement(By.xpath("/html/body/script[7]")).getAttribute("innerHTML");
-//        try {
-//            Files.writeString(new File("dfdsf").toPath(), scriptStr);
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-        script = new JSONObject(scriptStr.substring(scriptStr.indexOf("INIT_DATA=") + 10));
-        globalData = script.getJSONObject("globalData");
+        final List<WebElement> elements =  driver.findElements(By.tagName("script"));
+        for (WebElement element : elements) {
+            try {
+                final String scriptStr = element.getAttribute("innerHTML");
+                script = new JSONObject(scriptStr.substring(scriptStr.indexOf("INIT_DATA=") + 10));
+//                try {
+//                    Files.writeString(new File("dfdsf").toPath(), scriptStr);
+//                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+//                }
 
-       /// } catch (Exception e) {
-       //     e.printStackTrace();
-       // }
+                break;
+            } catch (Exception ignored) {}
+        }
+        globalData = script.getJSONObject("globalData");
     }
 
     private String getTitle() {
@@ -209,13 +168,12 @@ public class ParseService implements IInitDriverService {
             final JSONObject j = array.getJSONObject(i);
             set.add(new String[]{j.getString("price"), String.valueOf(j.getInt("beginAmount"))});
         }
-        return set;
+        final Set<String[]> sortedSet = new TreeSet<>(Comparator.comparingInt(o -> Integer.parseInt(o[1])));
+        sortedSet.addAll(set);
+        return sortedSet;
     }
 
     private String getPrice() {
-//        final JSONObject object = globalData.getJSONObject("skuModel");
-//        final String price = object.getString("skuPriceScale");
-//        return price.substring(0, price.indexOf("-"));
         final JSONObject data = script.getJSONObject("data");
         final Iterator<String> iterator = data.keys();
         iterator.next();
@@ -226,18 +184,25 @@ public class ParseService implements IInitDriverService {
     }
 
     private int getMin_amount() {
-        final JSONObject object = globalData.getJSONObject("orderParamModel").getJSONObject("orderParam").getJSONObject("mixParam");
-        return object.getInt("mixAmount");
+        try {
+            final JSONObject object = globalData.getJSONObject("orderParamModel").getJSONObject("orderParam").getJSONObject("mixParam");
+            return object.getInt("mixAmount");
+        } catch (JSONException e) {
+            return 0;
+        }
     }
 
     private Set<String> getDesc_img() {
+        driver.manage().window().fullscreen();
         for (int i = 0; i < 600; i++) {
             actionsService.scrollToOffset(75);
         }
-
+        driver.manage().window().maximize();
+        driver.manage().window().fullscreen();
         for (int i = 0; i < 600; i++) {
             actionsService.scrollToOffset(-75);
         }
+        driver.manage().window().maximize();
         final Set<String> descImages = new HashSet<>();
         driver.findElements(By.className("desc-img-loaded"))
                 .forEach(el -> descImages.add(el.getAttribute("src")));
@@ -302,7 +267,7 @@ public class ParseService implements IInitDriverService {
         return set;
     }
 
-    private Set<Skus> getSkus(Map<String, String> skuPropsList) {
+    private Set<Skus> getSkus(Map<String, String> skuPropsList, Set<String[]> priceRange) {
         final JSONObject object = globalData.getJSONObject("skuModel").getJSONObject("skuInfoMap");
         final Iterator<String> iterator = object.keys();
         final Set<Skus> set = new HashSet<>();
@@ -317,7 +282,9 @@ public class ParseService implements IInitDriverService {
             String price = "";
             try {
                 price = iterObject.getString("price");
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+                price = Collections.max(priceRange.stream().toList(), Comparator.comparing(strings -> Float.parseFloat(strings[0])))[0];
+            }
 
             set.add(new Skus(
                     iterObject.getInt("saleCount"),
