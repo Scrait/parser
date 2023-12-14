@@ -1,8 +1,8 @@
 package ru.scrait.parser.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.scrait.parser.models.Response;
@@ -15,16 +15,14 @@ public class MainController {
     private final ControlService controlService;
 
     @RequestMapping
-    public String prepare(long id) throws JsonProcessingException {
+    public ResponseEntity<?> prepare(long id) {
+        System.out.println(id);
         return sendData(id);
     }
 
-    private String sendData(long id) throws JsonProcessingException {
-        try {
-            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(new Response(200, "success", controlService.getData(id)));
-        } catch (Exception e) {
-            //second try
-            return new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(new Response(200, "success", controlService.getData(id)));
-        }
+    private ResponseEntity<?> sendData(long id) {
+        final Response response = controlService.getData(id);
+        return new ResponseEntity<>(response, HttpStatusCode.valueOf(response.getCode()));
     }
+
 }

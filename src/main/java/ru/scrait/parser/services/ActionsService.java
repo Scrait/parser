@@ -35,7 +35,7 @@ public class ActionsService implements IInitDriverService {
                 .moveByOffset(FindUtils.randomNumber(40, 80), FindUtils.randomNumber(-20, 20))
                 .moveByOffset(FindUtils.randomNumber(-4, -2), FindUtils.randomNumber(-20, 20))
 
-                .moveByOffset(FindUtils.randomNumber(297, 392), FindUtils.randomNumber(4, 7))
+                .moveByOffset(FindUtils.randomNumber(220, 250), FindUtils.randomNumber(4, 7))
                 .release()
 
                 .moveByOffset(FindUtils.randomNumber(-5, 4), FindUtils.randomNumber(-7, 3))
